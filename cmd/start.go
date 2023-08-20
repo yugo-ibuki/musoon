@@ -3,12 +3,9 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/yugo-ibuki/musoon/internal/browser"
+	"github.com/yugo-ibuki/musoon/internal/config"
 	"os"
-)
-
-var (
-	id     *string
-	config *string
 )
 
 type flag struct {
@@ -31,8 +28,8 @@ You don't need to open the browser and search for the music you want to listen t
 }
 
 func init() {
-	id = startCmd.Flags().StringP("id", "i", "", "Specify the id of the music you want to listen to")
-	config = startCmd.Flags().StringP("configPath", "c", "", "If you have the config file(toml), you can specify it.")
+	startCmd.Flags().StringP("id", "i", "", "Specify the id of the music you want to listen to")
+	startCmd.Flags().StringP("configPath", "c", "", "If you have the config file(toml), you can specify it.")
 	rootCmd.AddCommand(startCmd)
 }
 
@@ -66,14 +63,26 @@ func start(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Println(*flag)
+	brws := browser.NewBrowser()
 
 	// open the browser
-	//brws := browser.NewBrowser()
-	//if err := brws.Open(*flag.id); err != nil {
-	//	fmt.Print(err)
-	//	return err
-	//}
+	if len(*flag.id) != 0 {
+		if err := brws.Open(*flag.id); err != nil {
+			fmt.Print(err)
+			return err
+		}
+	} else {
+		conf := config.NewConfig()
+		content, err := conf.Read(*flag.configPath)
+		if err != nil {
+			return err
+		}
+
+		if err := brws.Open(content.ID); err != nil {
+			fmt.Print(err)
+			return err
+		}
+	}
 
 	return nil
 }
