@@ -3,11 +3,18 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/yugo-ibuki/musoon/internal/browser"
 	"os"
 )
 
-var id *string
+var (
+	id     *string
+	config *string
+)
+
+type flag struct {
+	id         *string
+	configPath *string
+}
 
 var startCmd = &cobra.Command{
 	Use:   "start",
@@ -16,32 +23,57 @@ var startCmd = &cobra.Command{
 You don't need to open the browser and search for the music you want to listen to.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(*id) == 0 {
+		if err := start(cmd, args); err != nil {
 			fmt.Println("can not parse command line argument (--id)")
 			os.Exit(1)
 		}
-		os.Exit(start(cmd, args))
 	},
 }
 
 func init() {
 	id = startCmd.Flags().StringP("id", "i", "", "Specify the id of the music you want to listen to")
+	config = startCmd.Flags().StringP("configPath", "c", "", "If you have the config file(toml), you can specify it.")
 	rootCmd.AddCommand(startCmd)
 }
 
-func start(cmd *cobra.Command, args []string) int {
+func parseArgs(cmd *cobra.Command, _ ...[]string) (*flag, error) {
+	flg := flag{}
+
+	// if id is specified, it doesn't read the config file.
 	id, err := cmd.Flags().GetString("id")
 	if err != nil {
-		fmt.Print("no id specified")
-		return 1
+		return nil, fmt.Errorf("can not parse command line argument (--id)")
 	}
+	flg.id = &id
+
+	// if the both of id and configPath are not specified, you may need to specify id or configPath.
+	configPath, err := cmd.Flags().GetString("configPath")
+	if err != nil {
+		return nil, fmt.Errorf("can not parse command line argument (--config)")
+	}
+	flg.configPath = &configPath
+
+	if *flg.id == "" && *flg.configPath == "" {
+		return nil, fmt.Errorf("can not parse command line argument")
+	}
+
+	return &flg, nil
+}
+
+func start(cmd *cobra.Command, args []string) error {
+	flag, err := parseArgs(cmd, args)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(*flag)
 
 	// open the browser
-	brws := browser.NewBrowser()
-	if err := brws.Open(id); err != nil {
-		fmt.Print(err)
-		return 1
-	}
+	//brws := browser.NewBrowser()
+	//if err := brws.Open(*flag.id); err != nil {
+	//	fmt.Print(err)
+	//	return err
+	//}
 
-	return 0
+	return nil
 }
