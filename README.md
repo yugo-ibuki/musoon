@@ -1,6 +1,6 @@
 # Overview
 
-This is a simple access to your music.
+This is simple access to your music.
 
 # Requirement
 
