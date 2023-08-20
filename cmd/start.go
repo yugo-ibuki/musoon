@@ -65,13 +65,14 @@ func start(cmd *cobra.Command, args []string) error {
 
 	brws := browser.NewBrowser()
 
-	// open the browser
 	if len(*flag.id) != 0 {
+		// if id is specified directly, it sets id to the browser.
 		if err := brws.Open(*flag.id); err != nil {
 			fmt.Print(err)
 			return err
 		}
 	} else {
+		// if configPath is specified, it reads the config file and sets id to the browser.
 		conf := config.NewConfig()
 		content, err := conf.Read(*flag.configPath)
 		if err != nil {
