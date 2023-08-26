@@ -9,7 +9,7 @@ This is simple access to your music.
 # Usage
 
 ```bash
-go install github.com/yugo-ibuki/musoon
+go install github.com/yugo-ibuki/musoon@latest
 ```
 
 then
